@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import unittest
-from translate.data import (
+from translate.swedish_to_english import (
     to_english,
     load_dictionary,
     english_words,
