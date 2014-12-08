@@ -38,6 +38,29 @@ def translate_greedy_help(last_word, words, depth, bigrams):
             return [word[0]] + result
     return None
 
+def translate_sum(swedish_sentence, dictionary, bigrams):
+    words = english_words(swedish_sentence, dictionary)
+    last_word = "<s>"
+    output = translate_sum_help(last_word, words, 0, bigrams)
+    max = 0
+    result_sentence = 0
+    for index, sentence in enumerate(output):
+        if sentence[1] > max:
+            result_sentence = index
+            max = sentence[1]
+    return " ".join(output[result_sentence][0])
+
+def translate_sum_help(last_word, words, depth, bigrams):
+    if depth == len(words):
+        return [([], 0)]
+    possibles = possible_words(last_word, words[depth], bigrams)
+    alternatives = []
+    for word, frequency in possibles.most_common():
+        result = translate_sum_help(word, words, depth + 1, bigrams)
+        for wordz, freq in result:
+            alternatives.append(([word] + wordz, frequency + freq))
+    return alternatives
+
 
 def possible_words(last_word, words, bigrams):
     possibles = Counter()

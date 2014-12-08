@@ -12,7 +12,7 @@ from translate.swedish_to_english import (
     get_inflections,
     translate_greedy,
     possible_words,
-    get_most_probable_values,
+    translate_sum,
 )
 
 class TestData(unittest.TestCase):
@@ -132,3 +132,8 @@ class TestData(unittest.TestCase):
         expected = Counter({'is': 53121629, 'are': 26543233, 'am': 1596465})
         self.assertEqual(actual, expected)
 
+    def test_translate_sum_is_this_a_tree(self):
+        swedish_sentence = u'Är detta ett träd?'
+        actual = translate_sum(swedish_sentence, self.dictionary, self.bigrams)
+        expected = 'is this one tree'
+        self.assertEqual(actual, expected)
