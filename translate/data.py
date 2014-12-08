@@ -1,6 +1,7 @@
 import os
 import xml.etree.ElementTree as ET
 from collections import defaultdict
+from collections import Counter
 
 
 def to_english(swedish_word, dictionary):
@@ -19,9 +20,15 @@ def load_dictionary():
     lexikon = os.path.join(current_directory, 'data', 'folkets_sv_en_public.xml')
     return ET.parse(lexikon)
 
+def get_most_probable(fr, to, dictionary):
+    l = dictionary[fr].most_common()
+    for v in l:
+        if(to.count(v[0]) > 0):
+            return v[0]
+    
 
 def load_bigrams():
-    d = defaultdict(lambda : defaultdict(int))
+    d = defaultdict(lambda : Counter())
     current_directory = os.path.dirname(__file__)
     bigrams = os.path.join(current_directory, 'data', 'count_2w.txt')
     with open(bigrams, 'r') as f:
@@ -30,6 +37,5 @@ def load_bigrams():
             fr = fr.lower()
             to = to.lower()
 
-            d[fr][to] += int(value)
+            d[fr][to] += int(value)      
     return d
-
