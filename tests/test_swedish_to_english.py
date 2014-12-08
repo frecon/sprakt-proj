@@ -10,7 +10,7 @@ from translate.swedish_to_english import (
     load_bigrams,
     translate,
     get_inflections,
-    translate_two,
+    translate_greedy,
     possible_words,
     get_most_probable_values,
 )
@@ -101,14 +101,14 @@ class TestData(unittest.TestCase):
 
     def test_translate_how_are_you_two(self):
         swedish_sentence = u'Är detta ett steg?'
-        actual = translate_two(swedish_sentence, self.dictionary, self.bigrams)
+        actual = translate_greedy(swedish_sentence, self.dictionary, self.bigrams)
         expected = 'is this one step'
         self.assertEqual(actual, expected)
 
     def test_translate_how_are_you_tree(self):
         swedish_sentence = u'Är detta ett träd?'
-        actual = translate_two(swedish_sentence, self.dictionary, self.bigrams)
-        expected = 'is this a tree'
+        actual = translate_greedy(swedish_sentence, self.dictionary, self.bigrams)
+        expected = 'is this one tree'
         self.assertEqual(actual, expected)
 
     def test_xpath(self):

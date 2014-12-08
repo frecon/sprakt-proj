@@ -22,18 +22,18 @@ def translate(swedish_sentence, dictionary, bigrams):
         last_word = possible
     return " ".join(output)
 
-def translate_two(swedish_sentence, dictionary, bigrams):
+def translate_greedy(swedish_sentence, dictionary, bigrams):
     words = english_words(swedish_sentence, dictionary)
     last_word = "<s>"
-    output = translate_help(last_word, words, 0, bigrams)
+    output = translate_greedy_help(last_word, words, 0, bigrams)
     return " ".join(output)
 
-def translate_help(last_word, words, depth, bigrams):
+def translate_greedy_help(last_word, words, depth, bigrams):
     if depth == len(words):
         return []
     possibles = possible_words(last_word, words[depth], bigrams)
     for word in possibles.most_common():
-        result = translate_help(word[0], words, depth + 1, bigrams)
+        result = translate_greedy_help(word[0], words, depth + 1, bigrams)
         if result != None:
             return [word[0]] + result
     return None
