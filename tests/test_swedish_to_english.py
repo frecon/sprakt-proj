@@ -19,41 +19,41 @@ class TestData(unittest.TestCase):
 
     def test_to_english_feel(self):
         actual = to_english(u'mår', self.dictionary)
-        expected = set(['feel'])
+        expected = {'feel'}
         self.assertEqual(actual, expected)
 
     def test_to_english_allihopa(self):
         actual = to_english('allihopa', self.dictionary)
-        expected = set(['all', 'one and all'])
+        expected = {'all', 'one and all'}
         self.assertEqual(actual, expected)
 
     def test_to_english_swedish_word_returns_list_of_english_words(self):
         actual = to_english('hej', self.dictionary)
-        expected = set(['hello', 'hallo', 'hey', 'hi'])
+        expected = {'hello', 'hallo', 'hey', 'hi'}
         self.assertEqual(actual, expected)
 
     def test_on(self):
         actual = to_english(u'på', self.dictionary)
-        expected = set(['at etc', 'on', 'in', 'during', 'of', 'at', 'after', 'in'])
+        expected = {'at etc', 'on', 'in', 'during', 'of', 'at', 'after', 'in'}
         self.assertEqual(actual, expected)
 
     def test_ett(self):
         actual = to_english(u'ett', self.dictionary)
-        expected = set(['a', 'an', 'one', 'a, an'])
+        expected = {'a', 'an', 'one', 'a, an'}
         self.assertEqual(actual, expected)
 
     def test_dig(self):
         actual = to_english(u'dig', self.dictionary)
-        expected = set(['you'])
+        expected = {'you'}
         self.assertEqual(actual, expected)
 
     def test_direct_translate(self):
         swedish_sentence = u'Hej på dig.'
         actual = english_words(swedish_sentence, self.dictionary)
 
-        expected = [set(['hello', 'hallo', 'hey', 'hi']),
-                   set(['at etc', 'on', 'in', 'during', 'of', 'at', 'after', 'in']),
-                    set(['you'])]
+        expected = [{'hello', 'hallo', 'hey', 'hi'},
+                   {'at etc', 'on', 'in', 'during', 'of', 'at', 'after', 'in'},
+                    {'you'}]
         self.assertEqual(actual, expected)
 
     def test_get_most_probable_hi(self):
@@ -98,7 +98,7 @@ class TestData(unittest.TestCase):
 
     def test_xpath(self):
         actual = get_inflections(u'är', self.dictionary)
-        expected = set(['is', 'am', 'are'])
+        expected = {'is', 'am', 'are'}
         # XXX should fail due to semantical difference between SWE-ENG
         self.assertEqual(actual, expected)
 
@@ -106,5 +106,5 @@ class TestData(unittest.TestCase):
         fr = 'this'
         to = ["a", "one"]
         actual = get_most_probable(fr, to, self.bigrams)
-        expected = 'a'
+        expected = 'one'
         self.assertEqual(actual, expected)
