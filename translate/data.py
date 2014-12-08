@@ -1,5 +1,7 @@
 import os
 import xml.etree.ElementTree as ET
+from collections import defaultdict
+
 
 def to_english(swedish_word):
     current_directory = os.path.dirname(__file__)
@@ -14,3 +16,11 @@ def to_english(swedish_word):
                     english_words.append(translation.attrib['value'])
     return english_words
 
+
+def loadBigrams():
+    d = defaultdict(list)
+    with open('data/count_2w.txt', 'r') as f:
+        for line in f:
+            split = line.split()
+            d[split[0]].append((split[1], split[2]))
+    return d
