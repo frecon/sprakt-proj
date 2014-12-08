@@ -18,11 +18,15 @@ def to_english(swedish_word):
 
 
 def load_bigrams():
-    d = defaultdict(list)
+    d = defaultdict(lambda : defaultdict(int))
     current_directory = os.path.dirname(__file__)
     bigrams = os.path.join(current_directory, 'data', 'count_2w.txt')
     with open(bigrams, 'r') as f:
         for line in f:
-            split = line.split()
-            d[split[0]].append((split[1], split[2]))
+            fr, to, value = line.split()
+            fr = fr.lower()
+            to = to.lower()
+
+            d[fr][to] += int(value)
     return d
+
