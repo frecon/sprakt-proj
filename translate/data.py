@@ -1,6 +1,18 @@
+# coding: utf-8
+
 import os
-import xml.etree.ElementTree as ET
+from xml.etree import ElementTree
 from collections import defaultdict
+
+
+def english_words(swedish_sentence):
+    delimiters = ',.!'
+    swedish_words = (word.lower().strip(delimiters) for word in swedish_sentence.split())
+    translation = []
+    dictionary = load_dictionary()
+    for word in swedish_words:
+        translation.append(to_english(word, dictionary))
+    return translation
 
 
 def to_english(swedish_word, dictionary):
@@ -10,14 +22,16 @@ def to_english(swedish_word, dictionary):
         if child.attrib['value'] == swedish_word:
             for translation in child:
                 if translation.tag == 'translation':
-                    english_words.append(translation.attrib['value'])
+                    english_words.append(translation.attrib['value'].lower())
     return english_words
 
 
 def load_dictionary():
     current_directory = os.path.dirname(__file__)
     lexikon = os.path.join(current_directory, 'data', 'folkets_sv_en_public.xml')
-    return ET.parse(lexikon)
+    with open(lexikon, 'r') as f:
+        parser = ElementTree.XMLParser(encoding="utf-8")
+        return ElementTree.parse(f, parser=parser)
 
 
 def load_bigrams():
