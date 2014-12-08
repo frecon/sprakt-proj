@@ -3,6 +3,7 @@
 import os
 from xml.etree import ElementTree
 from collections import defaultdict
+from collections import Counter
 
 
 def english_words(swedish_sentence):
@@ -33,13 +34,22 @@ def load_dictionary():
         parser = ElementTree.XMLParser(encoding="utf-8")
         return ElementTree.parse(f, parser=parser)
 
+def get_most_probable(fr, to, dictionary):
+    l = dictionary[fr].most_common()
+    for v in l:
+        if(to.count(v[0]) > 0):
+            return v[0]
+    
 
 def load_bigrams():
-    d = defaultdict(list)
+    d = defaultdict(lambda : Counter())
     current_directory = os.path.dirname(__file__)
     bigrams = os.path.join(current_directory, 'data', 'count_2w.txt')
     with open(bigrams, 'r') as f:
         for line in f:
-            split = line.split()
-            d[split[0]].append((split[1], split[2]))
+            fr, to, value = line.split()
+            fr = fr.lower()
+            to = to.lower()
+
+            d[fr][to] += int(value)      
     return d
