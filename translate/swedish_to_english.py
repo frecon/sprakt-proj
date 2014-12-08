@@ -150,3 +150,8 @@ def load_bigrams():
             d[fr][to] += int(value)      
     return d
 
+
+if __name__ == '__main__':
+    if sys.argv[1]:
+        sentence = sys.argv[1].decode('utf-8')
+        print(translate_min(sentence, load_dictionary(), load_bigrams()))
