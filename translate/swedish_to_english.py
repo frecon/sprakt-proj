@@ -101,7 +101,7 @@ def english_words(swedish_sentence, dictionary):
     return translation
 
 
-def to_english(swedish_word, dictionary):
+def to_english(swedish_word, dictionary, include_inflections=False):
     root = dictionary.getroot()
     english_words = set()
     for child in root:
@@ -109,7 +109,7 @@ def to_english(swedish_word, dictionary):
             for translation in child:
                 if translation.tag == 'translation':
                     english_words.add(translation.attrib['value'].lower().strip(DELIMITERS))
-    if len(english_words) == 0:
+    if len(english_words) == 0 or include_inflections: # Possible future arg
         english_words.update(get_inflections(swedish_word.lower().strip(DELIMITERS), dictionary))
     output = set()
     for words in english_words:
