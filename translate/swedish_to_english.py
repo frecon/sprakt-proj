@@ -26,6 +26,30 @@ def translate(swedish_sentence, dictionary, bigrams):
         last_word = possible
     return " ".join(output)
 
+def translate_two(swedish_sentence, dictionary, bigrams):
+    words = english_words(swedish_sentence, dictionary)
+    last_word = "<s>"
+    output = translate_help(last_word, words, 0, bigrams)
+    return " ".join(output)
+
+def translate_help(last_word, words, depth, bigrams):
+    if depth == len(words):
+        return []
+    possibles = possible_words(last_word, words[depth], bigrams)
+    for word in possibles.most_common():
+        result = translate_help(word[0], words, depth + 1, bigrams)
+        if result != None:
+            return [word[0]] + result
+    return None
+
+
+def possible_words(last_word, words, bigrams):
+    possibles = Counter()
+    for word in words:
+        outword, frequency = get_most_probable_values(last_word, {word}, bigrams)
+        if frequency > 0:
+            possibles[outword] = frequency
+    return possibles
 
 def english_words(swedish_sentence, dictionary):
     swedish_words = (word.lower().strip(DELIMITERS) for word in swedish_sentence.split())
@@ -55,12 +79,15 @@ def load_dictionary():
         return etree.parse(f, parser=parser)
 
 def get_most_probable(fr, to, dictionary):
+    v1, v2 = get_most_probable_values(fr, to, dictionary)
+    return v1
+
+def get_most_probable_values(fr, to, dictionary):
     l = dictionary[fr].most_common()
     for v in l:
         if(v[0] in to):
-            return v[0]
-    return ''
-    
+            return v[0], v[1]
+    return '', 0
 
 def load_bigrams():
     d = defaultdict(lambda : Counter())

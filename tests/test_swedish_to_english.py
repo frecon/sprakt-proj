@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import unittest
+from collections import Counter
 from translate.swedish_to_english import (
     to_english,
     load_dictionary,
@@ -9,6 +10,9 @@ from translate.swedish_to_english import (
     load_bigrams,
     translate,
     get_inflections,
+    translate_two,
+    possible_words,
+    get_most_probable_values,
 )
 
 class TestData(unittest.TestCase):
@@ -20,6 +24,11 @@ class TestData(unittest.TestCase):
     def test_to_english_feel(self):
         actual = to_english(u'mår', self.dictionary)
         expected = {'feel'}
+        self.assertEqual(actual, expected)
+
+    def test_to_english_tree(self):
+        actual = to_english(u'träd', self.dictionary)
+        expected = {'tree', 'go', 'step', 'slip (on)'}
         self.assertEqual(actual, expected)
 
     def test_to_english_allihopa(self):
@@ -90,9 +99,9 @@ class TestData(unittest.TestCase):
         # XXX should fail due to semantical difference between SWE-ENG
         self.assertEqual(actual, expected)
 
-    def test_translate_how_are_you(self):
+    def test_translate_how_are_you_two(self):
         swedish_sentence = u'Är detta ett träd?'
-        actual = translate(swedish_sentence, self.dictionary, self.bigrams)
+        actual = translate_two(swedish_sentence, self.dictionary, self.bigrams)
         expected = 'is this a tree'
         self.assertEqual(actual, expected)
 
@@ -108,3 +117,12 @@ class TestData(unittest.TestCase):
         actual = get_most_probable(fr, to, self.bigrams)
         expected = 'one'
         self.assertEqual(actual, expected)
+
+    def test_possible_words(self):
+        last_word = "<s>"
+        swedish_sentence = u'Är detta ett träd?'
+        words = english_words(swedish_sentence, self.dictionary)
+        actual = possible_words(last_word, words[0], self.bigrams)
+        expected = Counter({'is': 53121629, 'are': 26543233, 'am': 1596465})
+        self.assertEqual(actual, expected)
+
