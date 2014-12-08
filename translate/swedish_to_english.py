@@ -1,6 +1,6 @@
 # coding: utf-8
 
-import os
+import os, sys
 from lxml import etree
 from collections import defaultdict
 from collections import Counter
@@ -59,6 +59,29 @@ def translate_sum_help(last_word, words, depth, bigrams):
         result = translate_sum_help(word, words, depth + 1, bigrams)
         for wordz, freq in result:
             alternatives.append(([word] + wordz, frequency + freq))
+    return alternatives
+
+def translate_min(swedish_sentence, dictionary, bigrams):
+    words = english_words(swedish_sentence, dictionary)
+    last_word = "<s>"
+    output = translate_min_help(last_word, words, 0, bigrams)
+    max = 0
+    result_sentence = 0
+    for index, sentence in enumerate(output):
+        if sentence[1] > max:
+            result_sentence = index
+            max = sentence[1]
+    return " ".join(output[result_sentence][0])
+
+def translate_min_help(last_word, words, depth, bigrams):
+    if depth == len(words):
+        return [([], sys.maxint)]
+    possibles = possible_words(last_word, words[depth], bigrams)
+    alternatives = []
+    for word, frequency in possibles.most_common():
+        result = translate_min_help(word, words, depth + 1, bigrams)
+        for wordz, freq in result:
+            alternatives.append(([word] + wordz, min(frequency, freq)))
     return alternatives
 
 
