@@ -5,16 +5,12 @@ from lxml import etree
 from collections import defaultdict
 from collections import Counter
 
-DELIMITERS = ',.! '
+DELIMITERS = ',.!? '
 
 def get_inflections(word, dictionary):
     word = word.lower()
     L = dictionary.xpath(u".//word[paradigm/inflection/@value='{0}']/translation/@value".format(word))
-    output = set()
-    for words in L:
-        for w in words.split('/'):
-            for w2 in w.split(','):
-                output.add(w2.strip(DELIMITERS))
+    output = set(L)
     return output
 
 def translate(swedish_sentence, dictionary, bigrams):
@@ -67,8 +63,14 @@ def to_english(swedish_word, dictionary):
             for translation in child:
                 if translation.tag == 'translation':
                     english_words.add(translation.attrib['value'].lower().strip(DELIMITERS))
-    english_words.update(get_inflections(swedish_word.lower().strip(DELIMITERS), dictionary))
-    return english_words
+    if len(english_words) == 0:
+        english_words.update(get_inflections(swedish_word.lower().strip(DELIMITERS), dictionary))
+    output = set()
+    for words in english_words:
+        for w in words.split('/'):
+            for w2 in w.split(','):
+                output.add(w2.strip(DELIMITERS))
+    return output
 
 
 def load_dictionary():

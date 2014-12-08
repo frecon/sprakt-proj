@@ -28,7 +28,7 @@ class TestData(unittest.TestCase):
 
     def test_to_english_tree(self):
         actual = to_english(u'träd', self.dictionary)
-        expected = {'tree', 'go', 'step', 'slip (on)'}
+        expected = {'tree'}
         self.assertEqual(actual, expected)
 
     def test_to_english_allihopa(self):
@@ -48,7 +48,7 @@ class TestData(unittest.TestCase):
 
     def test_ett(self):
         actual = to_english(u'ett', self.dictionary)
-        expected = {'a', 'an', 'one', 'a, an'}
+        expected = {'a', 'an', 'one'}
         self.assertEqual(actual, expected)
 
     def test_dig(self):
@@ -100,6 +100,12 @@ class TestData(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_translate_how_are_you_two(self):
+        swedish_sentence = u'Är detta ett steg?'
+        actual = translate_two(swedish_sentence, self.dictionary, self.bigrams)
+        expected = 'is this one step'
+        self.assertEqual(actual, expected)
+
+    def test_translate_how_are_you_tree(self):
         swedish_sentence = u'Är detta ett träd?'
         actual = translate_two(swedish_sentence, self.dictionary, self.bigrams)
         expected = 'is this a tree'
@@ -107,7 +113,7 @@ class TestData(unittest.TestCase):
 
     def test_xpath(self):
         actual = get_inflections(u'är', self.dictionary)
-        expected = {'is', 'am', 'are'}
+        expected = {'am/are/is'}
         # XXX should fail due to semantical difference between SWE-ENG
         self.assertEqual(actual, expected)
 
