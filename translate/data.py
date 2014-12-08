@@ -5,12 +5,21 @@ from xml.etree import ElementTree
 from collections import defaultdict
 from collections import Counter
 
+DELIMITERS = ',.!'
 
-def english_words(swedish_sentence):
-    delimiters = ',.!'
-    swedish_words = (word.lower().strip(delimiters) for word in swedish_sentence.split())
+def translate(swedish_sentence, dictionary, bigrams):
+    last_word = "<s>"
+    output = []
+    for words in english_words(swedish_sentence, dictionary):
+        possible = get_most_probable(last_word, words, bigrams)
+        output.append(possible)
+        last_word = possible
+    return " ".join(output)
+
+
+def english_words(swedish_sentence, dictionary):
+    swedish_words = (word.lower().strip(DELIMITERS) for word in swedish_sentence.split())
     translation = []
-    dictionary = load_dictionary()
     for word in swedish_words:
         translation.append(to_english(word, dictionary))
     return translation
@@ -20,10 +29,10 @@ def to_english(swedish_word, dictionary):
     root = dictionary.getroot()
     english_words = []
     for child in root:
-        if child.attrib['value'] == swedish_word:
+        if child.attrib['value'].replace('(', '').replace(')', '') == swedish_word:
             for translation in child:
                 if translation.tag == 'translation':
-                    english_words.append(translation.attrib['value'].lower())
+                    english_words.append(translation.attrib['value'].lower().strip(DELIMITERS))
     return english_words
 
 
@@ -39,6 +48,7 @@ def get_most_probable(fr, to, dictionary):
     for v in l:
         if(to.count(v[0]) > 0):
             return v[0]
+    return ''
     
 
 def load_bigrams():
