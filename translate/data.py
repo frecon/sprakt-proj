@@ -17,9 +17,11 @@ def to_english(swedish_word):
     return english_words
 
 
-def loadBigrams():
+def load_bigrams():
     d = defaultdict(list)
-    with open('data/count_2w.txt', 'r') as f:
+    current_directory = os.path.dirname(__file__)
+    bigrams = os.path.join(current_directory, 'data', 'count_2w.txt')
+    with open(bigrams, 'r') as f:
         for line in f:
             split = line.split()
             d[split[0]].append((split[1], split[2]))
