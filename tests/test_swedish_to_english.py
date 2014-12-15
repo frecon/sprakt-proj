@@ -149,5 +149,5 @@ class TestData(unittest.TestCase):
     def test_translate_min_new(self):
         swedish_sentence = u'Jag hatar dig'
         actual = translate_min_new(swedish_sentence, self.dictionary, load_dictionary("folkets_en_sv_public.xml"), self.bigrams)
-        expected = 'I hate you'
+        expected = 'i hate you'
         self.assertEqual(actual, expected)
