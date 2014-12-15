@@ -20,7 +20,7 @@ def translate_min_new(swedish_sentence, swe_eng, eng_swe, bigrams):
         if (sentence[1] > max or (sentence[1] >= max and sentence[2] > max2)) :
             result_sentence = index
             max = sentence[1]
-            max = sentence[2]
+            max2 = sentence[2]
     if(result_sentence == -1):
         return "Could not translate."
     if(max <= 0):

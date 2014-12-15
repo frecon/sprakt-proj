@@ -14,12 +14,13 @@ from translate.swedish_to_english import (
     possible_words,
     translate_sum,
     translate_min,
+    translate_min_new,
 )
 
 class TestData(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.dictionary = load_dictionary()
+        cls.dictionary = load_dictionary("folkets_sv_en_public.xml")
         cls.bigrams = load_bigrams()
 
     def test_to_english_feel(self):
@@ -143,4 +144,10 @@ class TestData(unittest.TestCase):
         swedish_sentence = u'Är detta ett träd?'
         actual = translate_min(swedish_sentence, self.dictionary, self.bigrams)
         expected = 'is this a tree'
+        self.assertEqual(actual, expected)
+
+    def test_translate_min_new(self):
+        swedish_sentence = u'Jag hatar dig'
+        actual = translate_min_new(swedish_sentence, self.dictionary, load_dictionary("folkets_en_sv_public.xml"), self.bigrams)
+        expected = 'I hate you'
         self.assertEqual(actual, expected)
