@@ -75,7 +75,7 @@ def to_english_new(swedish_word, swe_eng, eng_swe, include_inflections=False):
     for words in eng_words:
         for w in words.split('/'):
             for w2 in w.split(','):
-                output.add(w2.strip(DELIMITERS))
+                output.add(w2.strip(DELIMITERS).lower())
     if len(output) == 0:
         print (u"No Translation for word {0}".format(swedish_word))
     return output
