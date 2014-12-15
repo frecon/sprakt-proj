@@ -7,6 +7,87 @@ from collections import Counter
 
 DELIMITERS = ',.!? '
 
+
+def translate_min_new(swedish_sentence, swe_eng, eng_swe, bigrams):
+    words = english_words_new(swedish_sentence, swe_eng, eng_swe)
+    last_word = "<s>"
+    output = translate_min_help_new(last_word, words, 0, bigrams)
+    max = -sys.maxint
+    max2 = -sys.maxint
+    print output
+    result_sentence = -1
+    for index, sentence in enumerate(output):
+        if (sentence[1] > max or (sentence[1] >= max and sentence[2] > max2)) :
+            result_sentence = index
+            max = sentence[1]
+            max = sentence[2]
+    if(result_sentence == -1):
+        return "Could not translate."
+    if(max <= 0):
+        print "Sentence did not have a bigram path. Translation is random."
+    return " ".join(output[result_sentence][0])
+
+def translate_min_help_new(last_word, words, depth, bigrams,lastfailed=False):
+    if depth == len(words):
+        return [([], sys.maxint, sys.maxint)]
+    possibles = possible_words(last_word, words[depth], bigrams, lastfailed)
+    alternatives = []
+    for word, frequency in possibles.most_common():
+        result = translate_min_help_new(word, words, depth + 1, bigrams)
+        for wordz, freq, freq2 in result:
+            alternatives.append(([word] + wordz, min(frequency,freq), min(max(frequency,freq), freq2)))
+    
+    if len(alternatives) == 0:
+        #print ("No bigrams for word {0} to {1}".format(last_word,words[depth]))
+        result = translate_min_help_new("", words, depth+1, bigrams, True)  
+        for wordz, freq, freq2 in result:    
+            alternatives.append(([iter(words[depth]).next()] + wordz, 0, 0))
+
+    return alternatives
+
+
+def english_words_new(swedish_sentence, swe_eng, eng_swe):
+    swedish_words = (word.lower().strip(DELIMITERS) for word in swedish_sentence.split())
+    translation = []
+    for word in swedish_words:
+        translation.append(to_english_new(word, swe_eng, eng_swe))
+    return translation
+
+
+def to_english_new(swedish_word, swe_eng, eng_swe, include_inflections=False):
+    eng_words = set(swe_eng.xpath(u".//word[ @value='{0}']/translation/@value".format(swedish_word)))
+    #if(len(eng_words) == 0):
+    eng_words.update(swe_eng.xpath(u".//word[paradigm/inflection/@value='{0}']/translation/@value".format(swedish_word)))
+    swe_boj = set(swe_eng.xpath(u".//word[paradigm/inflection/@value='{0}' or @value='{0}']/@value".format(swedish_word)))
+    swe_boj.update(swe_eng.xpath(u".//word[paradigm/inflection/@value='{0}' or @value='{0}']/paradigm/inflection/@value".format(swedish_word)))
+
+    bojs = set()
+    for words in swe_boj:
+        for w in words.split('/'):
+            for w2 in w.split(','):
+                bojs.add(w2.strip(DELIMITERS))
+
+    for boj in bojs:
+        #eng_words.update(set(eng_swe.xpath(u".//word[translation/@value='{0}']/paradigm/inflection/@value".format(boj))))
+        #eng_words.update(set(eng_swe.xpath(u".//word[translation/@value='{0}']/@value".format(boj))))
+        pass
+    output = set()
+    for words in eng_words:
+        for w in words.split('/'):
+            for w2 in w.split(','):
+                output.add(w2.strip(DELIMITERS))
+    if len(output) == 0:
+        print (u"No Translation for word {0}".format(swedish_word))
+    return output
+
+
+
+
+
+
+
+
+
 def get_inflections(word, dictionary):
     word = word.lower()
     L = dictionary.xpath(u".//word[paradigm/inflection/@value='{0}']/translation/@value".format(word))
@@ -85,13 +166,20 @@ def translate_min_help(last_word, words, depth, bigrams):
     return alternatives
 
 
-def possible_words(last_word, words, bigrams):
-    possibles = Counter()
-    for word in words:
-        outword, frequency = get_most_probable_values(last_word, {word}, bigrams)
-        if frequency > 0:
-            possibles[outword] = frequency
-    return possibles
+def possible_words(last_word, words, bigrams, ignoreLast=False):
+    if(ignoreLast == False):
+        possibles = Counter()
+        for word in words:
+            outword, frequency = get_most_probable_values(last_word, {word}, bigrams)
+            if frequency > 0:
+                possibles[outword] = frequency
+        return possibles
+    else:
+        possibles = Counter()
+        for word in words:
+            possibles[word] = 0
+        return possibles
+
 
 def english_words(swedish_sentence, dictionary):
     swedish_words = (word.lower().strip(DELIMITERS) for word in swedish_sentence.split())
@@ -119,9 +207,9 @@ def to_english(swedish_word, dictionary, include_inflections=False):
     return output
 
 
-def load_dictionary():
+def load_dictionary(filename):
     current_directory = os.path.dirname(__file__)
-    lexikon = os.path.join(current_directory, 'data', 'folkets_sv_en_public.xml')
+    lexikon = os.path.join(current_directory, 'data', filename)
     with open(lexikon, 'r') as f:
         parser = etree.XMLParser(encoding="utf-8")
         return etree.parse(f, parser=parser)
@@ -154,4 +242,4 @@ def load_bigrams():
 if __name__ == '__main__':
     if sys.argv[1]:
         sentence = sys.argv[1].decode('utf-8')
-        print(translate_min(sentence, load_dictionary(), load_bigrams()))
+        print(translate_min_new(sentence, load_dictionary("folkets_sv_en_public.xml"), load_dictionary("folkets_en_sv_public.xml"), load_bigrams()))
