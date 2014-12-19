@@ -8,6 +8,24 @@ from collections import Counter
 DELIMITERS = ',.!? '
 
 
+def translate_direct(swedish_sentence, swe_eng, eng_swe, bigrams):
+    words = english_words_new(swedish_sentence, swe_eng, eng_swe)
+    last_word = "<s>"
+    output = translate_direct_help(last_word, words, 0, bigrams)
+    if output == None:
+        return "No Translation."
+    return " ".join(output)
+
+def translate_direct_help(last_word, words, depth, bigrams,lastfailed=False):
+    if depth == len(words):
+        return []
+    possibles = possible_words(last_word, words[depth], bigrams, True)
+    for word in possibles.most_common():
+        result = translate_direct_help(word[0], words, depth + 1, bigrams)
+        return [word[0]] + result
+
+    return None
+
 
 def translate_greedy_new(swedish_sentence, swe_eng, eng_swe, bigrams):
     words = english_words_new(swedish_sentence, swe_eng, eng_swe)
@@ -300,3 +318,4 @@ if __name__ == '__main__':
         print(u"Max Min: {0}".format(translate_min_new(sentence, swe_eng, eng_swe, bigram)))
         print(u"Max Sum: {0}".format(translate_sum_new(sentence, swe_eng, eng_swe, bigram)))
         print(u"Greedy : {0}".format(translate_greedy_new(sentence, swe_eng, eng_swe, bigram)))
+        print(u"Direct : {0}".format(translate_direct(sentence, swe_eng, eng_swe, bigram)))
