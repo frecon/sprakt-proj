@@ -8,20 +8,37 @@ from collections import Counter
 DELIMITERS = ',.!? '
 
 
+
+def translate_greedy_new(swedish_sentence, swe_eng, eng_swe, bigrams):
+    words = english_words_new(swedish_sentence, swe_eng, eng_swe)
+    last_word = "<s>"
+    output = translate_greedy_help_new(last_word, words, 0, bigrams)
+    if output == None:
+        return "No Translation."
+    return " ".join(output)
+
+def translate_greedy_help_new(last_word, words, depth, bigrams,lastfailed=False):
+    if depth == len(words):
+        return []
+    possibles = possible_words(last_word, words[depth], bigrams, lastfailed)
+    for word in possibles.most_common():
+        result = translate_greedy_help_new(word[0], words, depth + 1, bigrams)
+        if result != None:
+            return [word[0]] + result
+
+    return None
+
 def translate_min_new(swedish_sentence, swe_eng, eng_swe, bigrams):
     words = english_words_new(swedish_sentence, swe_eng, eng_swe)
     last_word = "<s>"
     output = translate_min_help_new(last_word, words, 0, bigrams)
     max = -sys.maxint
-    max2 = -sys.maxint
-    print output
     result_sentence = -1
     for index, sentence in enumerate(output):
-        if (sentence[1] > max or (sentence[1] >= max and sentence[2] > max2)) :
+        if (sentence[1] > max):
             result_sentence = index
             max = sentence[1]
-            max2 = sentence[2]
-    if(result_sentence == -1):
+    if(len(words) == 0 or result_sentence == -1):
         return "Could not translate."
     if(max <= 0):
         print "Sentence did not have a bigram path. Translation is random."
@@ -29,28 +46,65 @@ def translate_min_new(swedish_sentence, swe_eng, eng_swe, bigrams):
 
 def translate_min_help_new(last_word, words, depth, bigrams,lastfailed=False):
     if depth == len(words):
-        return [([], sys.maxint, sys.maxint)]
+        return [([], sys.maxint)]
     possibles = possible_words(last_word, words[depth], bigrams, lastfailed)
     alternatives = []
     for word, frequency in possibles.most_common():
         result = translate_min_help_new(word, words, depth + 1, bigrams)
-        for wordz, freq, freq2 in result:
-            alternatives.append(([word] + wordz, min(frequency,freq), min(max(frequency,freq), freq2)))
+        for wordz, freq in result:
+            alternatives.append(([word] + wordz, min(frequency,freq)))
     
     if len(alternatives) == 0:
         #print ("No bigrams for word {0} to {1}".format(last_word,words[depth]))
         result = translate_min_help_new("", words, depth+1, bigrams, True)  
-        for wordz, freq, freq2 in result:    
-            alternatives.append(([iter(words[depth]).next()] + wordz, 0, 0))
+        for wordz, freq in result:    
+            alternatives.append(([iter(words[depth]).next()] + wordz, 0))
 
     return alternatives
 
+
+
+def translate_sum_new(swedish_sentence, swe_eng, eng_swe, bigrams):
+    words = english_words_new(swedish_sentence, swe_eng, eng_swe)
+    last_word = "<s>"
+    output = translate_sum_help_new(last_word, words, 0, bigrams)
+    max = -sys.maxint
+    result_sentence = -1
+    for index, sentence in enumerate(output):
+        if (sentence[1] > max):
+            result_sentence = index
+            max = sentence[1]
+    if(len(words) == 0 or result_sentence == -1):
+        return "Could not translate."
+    return " ".join(output[result_sentence][0])
+
+def translate_sum_help_new(last_word, words, depth, bigrams,lastfailed=False):
+    if depth == len(words):
+        return [([], sys.maxint)]
+    possibles = possible_words(last_word, words[depth], bigrams, lastfailed)
+    alternatives = []
+    for word, frequency in possibles.most_common():
+        result = translate_sum_help_new(word, words, depth + 1, bigrams)
+        for wordz, freq in result:
+            alternatives.append(([word] + wordz, frequency+freq))
+    
+    if len(alternatives) == 0:
+        #print ("No bigrams for word {0} to {1}".format(last_word,words[depth]))
+        result = translate_sum_help_new("", words, depth+1, bigrams, True)  
+        for wordz, freq in result:    
+            alternatives.append(([iter(words[depth]).next()] + wordz, freq))
+
+    return alternatives
 
 def english_words_new(swedish_sentence, swe_eng, eng_swe):
     swedish_words = (word.lower().strip(DELIMITERS) for word in swedish_sentence.split())
     translation = []
     for word in swedish_words:
-        translation.append(to_english_new(word, swe_eng, eng_swe))
+        tmp = to_english_new(word, swe_eng, eng_swe)
+        if len(tmp) == 0:
+            print (u"No Translation for word {0}".format(word))
+            return []
+        translation.append(tmp)
     return translation
 
 
@@ -76,8 +130,6 @@ def to_english_new(swedish_word, swe_eng, eng_swe, include_inflections=False):
         for w in words.split('/'):
             for w2 in w.split(','):
                 output.add(w2.strip(DELIMITERS).lower())
-    if len(output) == 0:
-        print (u"No Translation for word {0}".format(swedish_word))
     return output
 
 
@@ -242,4 +294,9 @@ def load_bigrams():
 if __name__ == '__main__':
     if sys.argv[1]:
         sentence = sys.argv[1].decode('utf-8')
-        print(translate_min_new(sentence, load_dictionary("folkets_sv_en_public.xml"), load_dictionary("folkets_en_sv_public.xml"), load_bigrams()))
+        swe_eng = load_dictionary("folkets_sv_en_public.xml")
+        eng_swe = load_dictionary("folkets_en_sv_public.xml")
+        bigram = load_bigrams()
+        print(u"Max Min: {0}".format(translate_min_new(sentence, swe_eng, eng_swe, bigram)))
+        print(u"Max Sum: {0}".format(translate_sum_new(sentence, swe_eng, eng_swe, bigram)))
+        print(u"Greedy : {0}".format(translate_greedy_new(sentence, swe_eng, eng_swe, bigram)))
